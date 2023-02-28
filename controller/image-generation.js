@@ -18,7 +18,7 @@ exports.imageGenerator = async (req, res) => {
     res.json({
       status: "Success",
       message: "Image generated successfully",
-      data: image,
+      data: image.data?.choices?.[0]?.text,
     });
   } catch (error) {
     console.log(error);
