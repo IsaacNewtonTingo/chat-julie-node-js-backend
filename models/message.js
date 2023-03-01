@@ -5,8 +5,9 @@ const MessageSchema = new Schema(
   {
     messageID: String,
     user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      userID: String,
+      name: String,
+      avatar: String,
     },
     chat: {
       type: mongoose.Schema.Types.ObjectId,

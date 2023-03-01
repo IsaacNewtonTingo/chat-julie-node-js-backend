@@ -18,5 +18,7 @@ app.listen(PORT, () => {
 });
 
 const ImageGeneratorRouter = require("./routes/image-generator");
+const ChatRouter = require("./routes/chat");
 
 app.use("/api/open-ai", ImageGeneratorRouter);
+app.use("/api/chat", ChatRouter);
