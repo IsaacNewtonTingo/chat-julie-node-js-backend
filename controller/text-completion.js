@@ -1,8 +1,8 @@
 const { openai } = require("../config/open-ai");
 
 exports.textCompletion = async (req, res) => {
-  const { prompt } = req.body;
-  const maxTokens = 128;
+  const { prompt, user } = req.body;
+  const maxTokens = 2000;
   const temperature = 0.5;
 
   try {
@@ -11,6 +11,7 @@ exports.textCompletion = async (req, res) => {
       prompt: prompt,
       max_tokens: maxTokens,
       temperature: temperature,
+      user,
     });
     // Return the generated text as a response
     res.json({
