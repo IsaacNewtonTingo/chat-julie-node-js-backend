@@ -20,7 +20,9 @@ app.listen(PORT, () => {
 const ImageGeneratorRouter = require("./routes/image-generator");
 const TextCompletionRouter = require("./routes/text-completion");
 const ChatRouter = require("./routes/chat");
+const MessageRouter = require("./routes/message");
 
 app.use("/api/image", ImageGeneratorRouter);
 app.use("/api/text", TextCompletionRouter);
 app.use("/api/chat", ChatRouter);
+app.use("/api/message", MessageRouter);
