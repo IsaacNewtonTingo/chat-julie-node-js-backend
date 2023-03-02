@@ -18,7 +18,9 @@ app.listen(PORT, () => {
 });
 
 const ImageGeneratorRouter = require("./routes/image-generator");
+const TextCompletionRouter = require("./routes/text-completion");
 const ChatRouter = require("./routes/chat");
 
-app.use("/api/open-ai", ImageGeneratorRouter);
+app.use("/api/image", ImageGeneratorRouter);
+app.use("/api/text", TextCompletionRouter);
 app.use("/api/chat", ChatRouter);
