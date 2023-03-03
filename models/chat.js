@@ -5,6 +5,11 @@ const ChatSchema = new Schema(
   {
     chatName: String,
     chatID: String,
+    user: {
+      userID: String,
+      name: String,
+      avatar: String,
+    },
   },
   { timestamps: true }
 );

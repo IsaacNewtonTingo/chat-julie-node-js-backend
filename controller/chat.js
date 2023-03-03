@@ -23,6 +23,7 @@ exports.createChat = async (req, res) => {
     } else {
       //create chat then add message
       const newChat = await Chat.create({
+        user,
         chatID,
         chatName,
       });
@@ -34,12 +35,37 @@ exports.createChat = async (req, res) => {
         content,
         image,
       });
+
+      res.json({
+        status: "Sucess",
+        message: "Message stored successfully",
+      });
     }
   } catch (error) {
     console.log(error);
     res.json({
       status: "Failed",
       message: "An error occured while saving message",
+    });
+  }
+};
+
+exports.getUserChats = async (req, res) => {
+  try {
+    const userID = req.params.id;
+
+    const chats = await Chat.find({ "user.userID": userID });
+
+    res.json({
+      status: "Success",
+      message: "Chats retrieved successfully",
+      data: chats,
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      status: "Failed",
+      message: "An error occured while getting chats",
     });
   }
 };
