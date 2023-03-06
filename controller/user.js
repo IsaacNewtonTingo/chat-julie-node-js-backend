@@ -1,7 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const ForgotPassword = require("../../models/general/reset-pass");
 const { sendSMS } = require("../helpers/send-sms");
 const { Otp } = require("../models/otp");
 const { User } = require("../models/user");
@@ -24,6 +23,8 @@ exports.signup = async (req, res) => {
         let code = Math.floor(100000 + Math.random() * 900000).toString();
 
         const hashedCode = await bcrypt.hash(code, 10);
+
+        await Otp.deleteMany({ phoneNumber });
 
         await Otp.create({
           phoneNumber,
@@ -55,6 +56,12 @@ exports.register = async (req, res) => {
       lastName,
       phoneNumber,
       password: hashedPassword,
+    });
+
+    res.json({
+      status: "Success",
+      message:
+        "OTP verified successfully and your account was created. Please login.",
     });
   } catch (error) {
     console.log(error);

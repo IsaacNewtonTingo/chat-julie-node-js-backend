@@ -3,4 +3,5 @@ const credentials = {
   username: process.env.AFRICAS_TALKING_USER_NAME,
 };
 
-exports.sms = AfricasTalking = require("africastalking")(credentials);
+const AfricasTalking = require("africastalking")(credentials);
+exports.sms = AfricasTalking.SMS;
