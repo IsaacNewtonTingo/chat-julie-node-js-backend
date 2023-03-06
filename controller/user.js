@@ -1,20 +1,10 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const User = require("../../models/general/user");
-const PendingUserVerification = require("../../models/admin/pending-user-verification");
-const {
-  EmailVerification,
-} = require("../../models/admin/pending-email-verifications");
-const { Payments } = require("../../models/general/user-payments");
 const ForgotPassword = require("../../models/general/reset-pass");
-
-const credentials = {
-  apiKey: process.env.AFRICAS_TALKING_API_KEY,
-  username: process.env.AFRICAS_TALKING_USER_NAME,
-};
-
-const AfricasTalking = require("africastalking")(credentials);
+const { sendSMS } = require("../helpers/send-sms");
+const { Otp } = require("../models/otp");
+const { User } = require("../models/user");
 
 exports.signup = async (req, res) => {
   var { phoneNumber } = req.body;
@@ -31,7 +21,17 @@ exports.signup = async (req, res) => {
         });
       } else {
         //send verification code
-        sendVerificationCode(req.body, res);
+        let code = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const hashedCode = await bcrypt.hash(code, 10);
+
+        await Otp.create({
+          phoneNumber,
+          otp: hashedCode,
+          user: null,
+        });
+
+        sendSMS(phoneNumber, code, res);
       }
     });
   } catch (error) {
@@ -43,121 +43,19 @@ exports.signup = async (req, res) => {
   }
 };
 
-const sendVerificationCode = async ({ phoneNumber }, res) => {
+exports.register = async (req, res) => {
   try {
-    const toPhoneNumber = `+${phoneNumber}`;
-    //check if there was an initial record
-    await PendingUserVerification.findOneAndDelete({ phoneNumber }).then(
-      async () => {
-        let verificationCode = Math.floor(
-          1000 + Math.random() * 9000
-        ).toString();
-        //encrypt code
-        await bcrypt
-          .hash(verificationCode, 10)
-          .then(async (encryptedVerificationCode) => {
-            //add pending verification
-            const pendingVerification = new PendingUserVerification({
-              phoneNumber,
-              verificationCode: encryptedVerificationCode,
-              createdAt: Date.now(),
-            });
-            await pendingVerification.save().then(async () => {
-              //send code
+    let { firstName, lastName, phoneNumber, password } = req.body;
 
-              const sms = AfricasTalking.SMS;
-              const options = {
-                to: toPhoneNumber,
-                message: `${verificationCode}`,
-                // from: "Party finder",
-              };
+    const hashedPassword = await bcrypt.hash(password, 10);
+    //create user
 
-              await sms.send(options).then(() => {
-                res.json({
-                  status: "Success",
-                  messsage: `Verification code sent. Please verify your phone number to finish registration process. Code expires in 5 minutes`,
-                });
-              });
-            });
-          });
-      }
-    );
-  } catch (error) {
-    console.log(error);
-    res.json({
-      status: "Failed",
-      message: "An error occured while sending verification code",
-    });
-  }
-};
-
-exports.verifyCode = async (req, res) => {
-  try {
-    let {
-      verificationCode,
+    await User.create({
       firstName,
       lastName,
       phoneNumber,
-      password,
-      county,
-      subCounty,
-    } = req.body;
-
-    verificationCode.trim();
-
-    await PendingUserVerification.findOne({ phoneNumber }).then(
-      async (pendingRecordResponse) => {
-        if (!pendingRecordResponse) {
-          //no code record found
-          res.json({
-            status: "Failed",
-            message:
-              "Verification code has expired. Please request for another",
-          });
-        } else {
-          //compare the code
-          const encryptedCode = pendingRecordResponse.verificationCode;
-
-          await bcrypt
-            .compare(verificationCode, encryptedCode)
-            .then(async (response) => {
-              if (response) {
-                //code is correct
-                //hash password
-                await bcrypt.hash(password, 10).then(async (hashedPassword) => {
-                  //create user
-
-                  const newUser = new User({
-                    firstName,
-                    lastName,
-                    phoneNumber,
-                    password: hashedPassword,
-                    profilePicture: "",
-                    county,
-                    subCounty,
-                  });
-
-                  await newUser.save().then(async () => {
-                    //delete record
-                    await pendingRecordResponse.delete();
-                  });
-
-                  res.json({
-                    status: "Success",
-                    message: "Code verified successfully. Please login.",
-                  });
-                });
-              } else {
-                //wrong code
-                res.json({
-                  status: "Failed",
-                  message: "Invalid verification code entered",
-                });
-              }
-            });
-        }
-      }
-    );
+      password: hashedPassword,
+    });
   } catch (error) {
     console.log(error);
     res.json({
@@ -329,25 +227,6 @@ exports.getUser = async (req, res) => {
     res.json({
       status: "Failed",
       message: "An error occured while retrieving user data",
-    });
-  }
-};
-
-//get all my payments
-exports.getMyPayments = async (req, res) => {
-  const userID = req.body.id;
-  try {
-    const payments = await Payments.find({ user: userID });
-    res.json({
-      status: "Failed",
-      message: "Payments retrieved successfully",
-      data: payments,
-    });
-  } catch (error) {
-    console.log(error);
-    res.json({
-      status: "Failed",
-      message: "An error occured while getting payments",
     });
   }
 };
