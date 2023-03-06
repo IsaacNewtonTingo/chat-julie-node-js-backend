@@ -21,7 +21,9 @@ const ImageGeneratorRouter = require("./routes/image-generator");
 const TextCompletionRouter = require("./routes/text-completion");
 const ChatRouter = require("./routes/chat");
 const MessageRouter = require("./routes/message");
+const UserRouter = require("./routes/user");
 
+app.use("/api/user", UserRouter);
 app.use("/api/image", ImageGeneratorRouter);
 app.use("/api/text", TextCompletionRouter);
 app.use("/api/chat", ChatRouter);

@@ -16,13 +16,16 @@ exports.textCompletion = async (req, res) => {
 
     if (response) {
       //store the chat and message
-      let responseId = Math.floor(100000 + Math.random() * 900000).toString();
+      let responseId = Math.floor(
+        1000000000 + Math.random() * 9000000000
+      ).toString();
       const existingChat = await Chat.findOne({ chatID });
       if (existingChat) {
         //add the messages for the given user
         await Message.create({
           messageID,
           user,
+          role: "user",
           chat: existingChat._id,
           content,
         });
@@ -35,6 +38,7 @@ exports.textCompletion = async (req, res) => {
             name: "Chat Julie",
             avatar: null,
           },
+          role: "assistant",
           chat: existingChat._id,
           content: response.data.choices[0].message.content,
         });
@@ -50,6 +54,7 @@ exports.textCompletion = async (req, res) => {
         await Message.create({
           messageID,
           user,
+          role: "user",
           chat: newChat._id,
           content,
         });
@@ -62,6 +67,7 @@ exports.textCompletion = async (req, res) => {
             name: "Chat Julie",
             avatar: null,
           },
+          role: "assistant",
           chat: newChat._id,
           content: response.data.choices[0].message.content,
         });
