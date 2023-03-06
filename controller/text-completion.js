@@ -16,6 +16,7 @@ exports.textCompletion = async (req, res) => {
 
     if (response) {
       //store the chat and message
+      let responseId = Math.floor(100000 + Math.random() * 900000).toString();
       const existingChat = await Chat.findOne({ chatID });
       if (existingChat) {
         //add the messages for the given user
@@ -28,7 +29,7 @@ exports.textCompletion = async (req, res) => {
 
         //store the ai message
         await Message.create({
-          messageID,
+          messageID: responseId,
           user: {
             userID: 1,
             name: "Chat Julie",
@@ -55,7 +56,7 @@ exports.textCompletion = async (req, res) => {
 
         //store ai response
         await Message.create({
-          messageID,
+          messageID: responseId,
           user: {
             userID: 1,
             name: "Chat Julie",
