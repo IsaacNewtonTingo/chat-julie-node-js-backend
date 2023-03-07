@@ -9,6 +9,10 @@ const MessageSchema = new Schema(
       name: String,
       avatar: String,
     },
+    role: {
+      type: String,
+      default: "user",
+    },
     chat: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Chat",
