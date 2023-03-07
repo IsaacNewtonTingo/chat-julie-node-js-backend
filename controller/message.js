@@ -26,7 +26,7 @@ exports.getMessages = async (req, res) => {
     console.log(error);
     res.json({
       status: "Failed",
-      message: "An error occured while",
+      message: "An error occured while getting conversation",
     });
   }
 };
