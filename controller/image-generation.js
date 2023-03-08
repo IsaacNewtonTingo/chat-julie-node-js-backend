@@ -1,8 +1,9 @@
 const { openai } = require("../config/open-ai");
+const { Chat } = require("../models/chat");
 const { Message } = require("../models/message");
 
 exports.imageGenerator = async (req, res) => {
-  const { messages, user, messageID, prompt, chatName, chatID } = req.body;
+  const { user, messageID, prompt, chatName, chatID } = req.body;
   const temperature = 0.5;
   const model = "gpt-3.5-turbo";
 
@@ -41,6 +42,7 @@ exports.imageGenerator = async (req, res) => {
           role: "assistant",
           chat: existingChat._id,
           content: response.data.data[0].url,
+          image: response.data.data[0].url,
         });
       } else {
         //create chat then add message
@@ -70,6 +72,7 @@ exports.imageGenerator = async (req, res) => {
           role: "assistant",
           chat: newChat._id,
           content: response.data.data[0].url,
+          image: response.data.data[0].url,
         });
       }
       // Return the generated text as a response
