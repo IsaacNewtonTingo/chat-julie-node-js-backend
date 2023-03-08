@@ -3,7 +3,7 @@ const { Chat } = require("../models/chat");
 const { Message } = require("../models/message");
 
 exports.imageGenerator = async (req, res) => {
-  const { user, messageID, prompt, chatName, chatID } = req.body;
+  const { user, messageID, prompt, chatCode, chatName, chatID } = req.body;
   const temperature = 0.5;
   const model = "gpt-3.5-turbo";
 
@@ -50,6 +50,7 @@ exports.imageGenerator = async (req, res) => {
           user,
           chatID,
           chatName,
+          chatCode,
         });
 
         //store user message
