@@ -1,22 +1,23 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { sendEmail } = require("../helpers/send-email");
 
 const { sendSMS } = require("../helpers/send-sms");
 const { Otp } = require("../models/otp");
 const { User } = require("../models/user");
 
 exports.signup = async (req, res) => {
-  var { phoneNumber } = req.body;
+  var { email } = req.body;
 
-  phoneNumber = phoneNumber.toString().trim();
+  email = email.toString().trim();
 
   try {
     //check if phone number is already registered
-    await User.findOne({ phoneNumber }).then(async (response) => {
+    await User.findOne({ email }).then(async (response) => {
       if (response) {
         res.json({
           status: "Failed",
-          message: "Phone number provided is already registered",
+          message: "The provided email is already registered",
         });
       } else {
         //send verification code
@@ -24,15 +25,23 @@ exports.signup = async (req, res) => {
 
         const hashedCode = await bcrypt.hash(code, 10);
 
-        await Otp.deleteMany({ phoneNumber });
+        await Otp.deleteMany({ email });
 
         await Otp.create({
-          phoneNumber,
+          email,
           otp: hashedCode,
           user: null,
         });
 
-        sendSMS(phoneNumber, code, res);
+        const message = `<p>
+          Verify your email to complete your signup process.<br/>
+          Code <b>expires in 5 minutes.
+          <br/>
+          <br/>
+        <h1>${code}</h1>
+        `;
+
+        sendEmail(email, message, res);
       }
     });
   } catch (error) {
@@ -46,7 +55,7 @@ exports.signup = async (req, res) => {
 
 exports.register = async (req, res) => {
   try {
-    let { firstName, lastName, phoneNumber, password } = req.body;
+    let { firstName, lastName, email, password } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
     //create user
@@ -54,7 +63,7 @@ exports.register = async (req, res) => {
     await User.create({
       firstName,
       lastName,
-      phoneNumber,
+      email,
       password: hashedPassword,
     });
 
@@ -74,8 +83,8 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { phoneNumber, password } = req.body;
-    const user = await User.findOne({ phoneNumber });
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
     if (!user) {
       //user not found
       res.json({
@@ -122,18 +131,18 @@ exports.login = async (req, res) => {
 //forget password
 exports.sendForgotPasswordOtp = async (req, res) => {
   try {
-    const { phoneNumber } = req.body;
+    const { email } = req.body;
     //check if number exists
-    const user = await User.findOne({ phoneNumber });
+    const user = await User.findOne({ email });
     if (user) {
-      await ForgotPassword.findOneAndDelete({ phoneNumber });
+      await ForgotPassword.findOneAndDelete({ email });
 
       let verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
 
       const hashedPassword = await bcrypt.hash(verificationCode, 10);
 
       const newForgot = new ForgotPassword({
-        phoneNumber,
+        email,
         verificationCode: hashedPassword,
       });
 
@@ -141,7 +150,7 @@ exports.sendForgotPasswordOtp = async (req, res) => {
 
       const sms = AfricasTalking.SMS;
       const options = {
-        to: `+${phoneNumber}`,
+        to: `+${email}`,
         message: `${verificationCode}`,
         // from: "Party finder",
       };
@@ -169,8 +178,8 @@ exports.sendForgotPasswordOtp = async (req, res) => {
 //verify otp
 exports.changePassword = async (req, res) => {
   try {
-    const { phoneNumber, otp, password } = req.body;
-    const existingRecord = await ForgotPassword.findOne({ phoneNumber });
+    const { email, otp, password } = req.body;
+    const existingRecord = await ForgotPassword.findOne({ email });
     if (existingRecord) {
       const storedOtp = existingRecord.verificationCode;
 
@@ -179,10 +188,7 @@ exports.changePassword = async (req, res) => {
         //update password
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        await User.findOneAndUpdate(
-          { phoneNumber },
-          { password: hashedPassword }
-        );
+        await User.findOneAndUpdate({ email }, { password: hashedPassword });
 
         //delete record
         await existingRecord.deleteOne();

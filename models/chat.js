@@ -10,6 +10,10 @@ const ChatSchema = new Schema(
       name: String,
       avatar: String,
     },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
