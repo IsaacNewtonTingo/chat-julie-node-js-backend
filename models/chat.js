@@ -14,6 +14,10 @@ const ChatSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    chatCode: {
+      type: Number,
+      default: 0, //0-Text completion, 1-Image generation
+    },
   },
   { timestamps: true }
 );
