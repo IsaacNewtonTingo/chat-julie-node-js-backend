@@ -4,7 +4,7 @@ exports.imageGenerator = async (req, res) => {
   const { prompt } = req.body;
 
   try {
-    const image = await openai.createImage({
+    const response = await openai.createImage({
       prompt,
       size: "1024x1024",
     });
@@ -12,7 +12,7 @@ exports.imageGenerator = async (req, res) => {
     res.json({
       status: "Success",
       message: "Image generated successfully",
-      data: image.data,
+      data: response.data.data[0].url,
     });
   } catch (error) {
     console.log(error);
