@@ -3,7 +3,8 @@ const { Chat } = require("../models/chat");
 const { Message } = require("../models/message");
 
 exports.textCompletion = async (req, res) => {
-  const { messages, user, messageID, content, chatName, chatID } = req.body;
+  const { messages, user, messageID, content, chatName, chatCode, chatID } =
+    req.body;
   const temperature = 0.5;
   const model = "gpt-3.5-turbo";
 
@@ -48,6 +49,7 @@ exports.textCompletion = async (req, res) => {
           user,
           chatID,
           chatName,
+          chatCode,
         });
 
         //store user message
