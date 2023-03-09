@@ -7,7 +7,7 @@ exports.getUserChats = async (req, res) => {
 
     const chats = await Chat.find({
       $and: [{ user: userID }, { deleted: false }],
-    });
+    }).sort({ createdAt: -1 });
 
     res.json({
       status: "Success",
