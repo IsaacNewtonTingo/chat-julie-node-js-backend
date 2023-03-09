@@ -134,35 +134,31 @@ exports.sendForgotPasswordOtp = async (req, res) => {
     //check if number exists
     const user = await User.findOne({ email });
     if (user) {
-      await ForgotPassword.findOneAndDelete({ email });
+      let code = Math.floor(1000000 + Math.random() * 9000000).toString();
 
-      let verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+      const hashedCode = await bcrypt.hash(code, 10);
 
-      const hashedPassword = await bcrypt.hash(verificationCode, 10);
+      await Otp.deleteMany({ email });
 
-      const newForgot = new ForgotPassword({
+      await Otp.create({
         email,
-        verificationCode: hashedPassword,
+        otp: hashedCode,
+        user: null,
       });
 
-      await newForgot.save();
+      const message = `<p>
+        You have requested to reset your email. Enter the below otp to complete the process.<br/>
+        Code <b>expires in 5 minutes.
+        <br/>
+        <br/>
+      <h1>${code}</h1>
+      `;
 
-      const sms = AfricasTalking.SMS;
-      const options = {
-        to: `+${email}`,
-        message: `${verificationCode}`,
-        // from: "Party finder",
-      };
-
-      await sms.send(options);
-      res.json({
-        status: "Success",
-        message: "OTP sent sent successfully. Code expires in 5 minute",
-      });
+      sendEmail(email, message, res);
     } else {
       res.json({
         status: "Failed",
-        message: "User with the given phone number doesn't exist",
+        message: "User with the given email doesn't exist",
       });
     }
   } catch (error) {
@@ -178,36 +174,15 @@ exports.sendForgotPasswordOtp = async (req, res) => {
 exports.changePassword = async (req, res) => {
   try {
     const { email, otp, password } = req.body;
-    const existingRecord = await ForgotPassword.findOne({ email });
-    if (existingRecord) {
-      const storedOtp = existingRecord.verificationCode;
 
-      const correctOtp = await bcrypt.compare(otp.toString(), storedOtp);
-      if (correctOtp) {
-        //update password
+    //update password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await User.findOneAndUpdate({ email }, { password: hashedPassword });
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await User.findOneAndUpdate({ email }, { password: hashedPassword });
-
-        //delete record
-        await existingRecord.deleteOne();
-
-        res.json({
-          status: "Success",
-          message: "Password changed successfully",
-        });
-      } else {
-        res.json({
-          status: "Failed",
-          message: "Invalid otp entered",
-        });
-      }
-    } else {
-      res.json({
-        status: "Failed",
-        message: "Invalid otp entered",
-      });
-    }
+    res.json({
+      status: "Success",
+      message: "Password changed successfully",
+    });
   } catch (error) {
     console.log(error);
     res.json({
