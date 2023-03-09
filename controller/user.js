@@ -89,7 +89,7 @@ exports.login = async (req, res) => {
       //user not found
       res.json({
         status: "Failed",
-        message: "No user found with the given phone number. Please sign up",
+        message: "No user found with the given email. Please sign up",
       });
     } else {
       //user found
@@ -112,7 +112,6 @@ exports.login = async (req, res) => {
           data: {
             userID: user._id,
             roleID: user.roleID,
-            admin: user.admin,
             premium: user.premium,
             token: token,
           },
