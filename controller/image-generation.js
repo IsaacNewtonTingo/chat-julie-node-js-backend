@@ -13,7 +13,7 @@ exports.imageGenerator = async (req, res) => {
   try {
     const response = await openai.createImage({
       prompt,
-      size: "1024x1024",
+      size: "256x256",
     });
 
     if (response) {
