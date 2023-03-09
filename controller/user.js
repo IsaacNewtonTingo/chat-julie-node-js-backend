@@ -2,7 +2,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../helpers/send-email");
 
-const { sendSMS } = require("../helpers/send-sms");
 const { Otp } = require("../models/otp");
 const { User } = require("../models/user");
 
@@ -192,6 +191,47 @@ exports.changePassword = async (req, res) => {
   }
 };
 
+//update password
+exports.updatePassword = async (req, res) => {
+  try {
+    const userID = req.params.id;
+    const { oldPassword, newPassword } = req.body;
+
+    const user = await User.findOne({ _id: userID });
+    if (user) {
+      const storedPassword = user.password;
+      const correctPassword = await bcrypt.compare(oldPassword, storedPassword);
+
+      if (correctPassword) {
+        //hash new
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        //update
+        await user.updateOne({ password: hashedNewPassword });
+        res.json({
+          status: "Success",
+          message: "You have successfully changed your password",
+        });
+      } else {
+        res.json({
+          status: "Failed",
+          message: "Your old password is incorrect",
+        });
+      }
+    } else {
+      res.json({
+        status: "Failed",
+        message: "User not found",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.json({
+      status: "Failed",
+      message: "An error occured while updating password",
+    });
+  }
+};
+
 exports.getUser = async (req, res) => {
   try {
     const userID = req.params.id;
@@ -217,3 +257,48 @@ exports.getUser = async (req, res) => {
     });
   }
 };
+
+//create chat julie
+exports.createChatJulie = async (req, res) => {
+  const { firstName, lastName, email, password } = req.body;
+  try {
+    await User.create({
+      firstName,
+      lastName,
+      email,
+      password,
+      roleID: null,
+    });
+
+    res.json({
+      status: "Success",
+      message: "Chat Julie created successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      status: "Failed",
+      message: "An error occured while creating Chat Julie",
+    });
+  }
+};
+
+exports.getChatJulie = async (req, res) => {
+  const userID = req.params.id;
+  try {
+    const julie = await User.findOne({ _id: userID });
+    res.json({
+      status: "Success",
+      message: "Chat Julie retrieved successfully",
+      data: julie,
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      status: "Failed",
+      message: "An error occured while creating Chat Julie",
+    });
+  }
+};
+
+//

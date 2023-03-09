@@ -6,9 +6,8 @@ const ChatSchema = new Schema(
     chatName: String,
     chatID: String,
     user: {
-      userID: String,
-      name: String,
-      avatar: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
     deleted: {
       type: Boolean,
