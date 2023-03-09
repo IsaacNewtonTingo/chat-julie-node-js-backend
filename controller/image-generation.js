@@ -1,6 +1,9 @@
 const { openai } = require("../config/open-ai");
 const { Chat } = require("../models/chat");
 const { Message } = require("../models/message");
+require("dotenv").config();
+
+const chatJulieID = process.env.CHAT_JULIE_ID;
 
 exports.imageGenerator = async (req, res) => {
   const { user, messageID, prompt, chatCode, chatName, chatID } = req.body;
@@ -34,11 +37,7 @@ exports.imageGenerator = async (req, res) => {
         //store the ai message
         await Message.create({
           messageID: responseId,
-          user: {
-            userID: 1,
-            name: "Chat Julie",
-            avatar: null,
-          },
+          user: chatJulieID,
           role: "assistant",
           chat: existingChat._id,
           content: response.data.data[0].url,
@@ -65,11 +64,7 @@ exports.imageGenerator = async (req, res) => {
         //store ai response
         await Message.create({
           messageID: responseId,
-          user: {
-            userID: 1,
-            name: "Chat Julie",
-            avatar: null,
-          },
+          user: chatJulieID,
           role: "assistant",
           chat: newChat._id,
           content: response.data.data[0].url,

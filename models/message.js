@@ -5,9 +5,8 @@ const MessageSchema = new Schema(
   {
     messageID: String,
     user: {
-      userID: String,
-      name: String,
-      avatar: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
     role: {
       type: String,

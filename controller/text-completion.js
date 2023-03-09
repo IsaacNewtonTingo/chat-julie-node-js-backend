@@ -1,6 +1,9 @@
 const { openai } = require("../config/open-ai");
 const { Chat } = require("../models/chat");
 const { Message } = require("../models/message");
+require("dotenv").config();
+
+const chatJulieID = process.env.CHAT_JULIE_ID;
 
 exports.textCompletion = async (req, res) => {
   const { messages, user, messageID, content, chatName, chatCode, chatID } =
@@ -34,11 +37,7 @@ exports.textCompletion = async (req, res) => {
         //store the ai message
         await Message.create({
           messageID: responseId,
-          user: {
-            userID: 1,
-            name: "Chat Julie",
-            avatar: null,
-          },
+          user: chatJulieID,
           role: "assistant",
           chat: existingChat._id,
           content: response.data.choices[0].message.content,
@@ -64,11 +63,7 @@ exports.textCompletion = async (req, res) => {
         //store ai response
         await Message.create({
           messageID: responseId,
-          user: {
-            userID: 1,
-            name: "Chat Julie",
-            avatar: null,
-          },
+          user: chatJulieID,
           role: "assistant",
           chat: newChat._id,
           content: response.data.choices[0].message.content,
